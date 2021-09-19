@@ -1,9 +1,9 @@
-const testGenerator = {
+const login = {
   method: 'GET',
-  url: '/test-generator',
+  url: '/login',
   handler: async (request, reply) => {
     reply.send({ hello: 'world' })
   }
 };
 
-module.exports = testGenerator;
+module.exports = login;
