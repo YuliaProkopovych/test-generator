@@ -24,6 +24,8 @@ const getTestsOpts = {
 const testsRoute = (fastify, options, done) => {
   fastify.get('/tests', getTestsOpts);
   fastify.get('/tests/:id', getTestOpts); // the :id route is a placeholder for an id (indicates a parameter)
+  fastify.post('/tests/new', newTestOpts);
+
 
   done();
 };
@@ -61,6 +63,31 @@ const getTestOpts = {
   }
 
 };
+
+const newTestOpts = {
+  schema: {
+    body: {
+      type: 'object',
+      required: ['title', 'body'],
+      properties: {
+        title: { type: 'string'},
+        body: { type: 'string'},
+      },
+    },
+    response: {
+      200: { type: 'string'}, // sending a simple message as string
+    },
+  },
+  handler: (req, reply) => {
+    const { title, body } = req.body; // no body parser required for this to work
+
+    const id = tests.length + 1; // posts is imported from cloud/posts.js
+    tests.push({ id, title, body });
+
+    reply.send('Test added');
+  }
+};
+
 
 
 module.exports = testsRoute;
