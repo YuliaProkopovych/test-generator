@@ -26,6 +26,8 @@ const testsRoute = (fastify, options, done) => {
   fastify.get('/tests/:id', getTestOpts); // the :id route is a placeholder for an id (indicates a parameter)
   fastify.post('/tests/new', newTestOpts);
   fastify.put('/tests/edit/:id', updateTestOpts);
+  fastify.delete('/tests/:id', deleteTestOpts);
+
 
   done();
 };
@@ -123,5 +125,32 @@ const updateTestOpts = {
     return reply.send('Test updated');
   }
 };
+
+const deleteTestOpts = {
+  schema: {
+    params: {
+      id: { type: 'number' }, // converts the id param to number
+    },
+    response: {
+      200: { type: 'string' },
+    },
+  },
+  handler: (req, reply) => {
+    const { id } = req.params;
+
+    const testIndex = tests.findIndex((test) => {
+      return test.id === id;
+    });
+
+    if (testIndex === -1) {
+      return reply.status(404).send(new Error("Test doesn't exist"));
+    }
+
+    tests.splice(testIndex, 1);
+
+    return reply.send('Test deleted');
+  }
+};
+
 
 module.exports = testsRoute;
