@@ -25,7 +25,7 @@ const testsRoute = (fastify, options, done) => {
   fastify.get('/tests', getTestsOpts);
   fastify.get('/tests/:id', getTestOpts); // the :id route is a placeholder for an id (indicates a parameter)
   fastify.post('/tests/new', newTestOpts);
-
+  fastify.put('/tests/edit/:id', updateTestOpts);
 
   done();
 };
@@ -88,6 +88,40 @@ const newTestOpts = {
   }
 };
 
+const updateTestOpts = {
+  schema: {
+    body: {
+      type: 'object',
+      required: ['title', 'body'],
+      properties: {
+        title: { type: 'string'},
+        body: { type: 'string'},
+      },
+    },
+    params: {
+      id: { type: 'number' }, // converts the id param to number
+    },
+    response: {
+      200: { type: 'string'}, // a simple message will be sent
+    },
+  },
+  handler: (req, reply) => {
+    const { title, body } = req.body;
+    const { id } = req.params;
 
+    const test = tests.filter((ptestost) => {
+      return test.id === id;
+    })[0];
+
+    if (!test) {
+      return reply.status(404).send(new Error("Test doesn't exist"));
+    }
+
+    test.title = title;
+    test.body = body;
+
+    return reply.send('Test updated');
+  }
+};
 
 module.exports = testsRoute;
