@@ -111,7 +111,7 @@ const updateTestOpts = {
     const { title, body } = req.body;
     const { id } = req.params;
 
-    const test = tests.filter((ptestost) => {
+    const test = tests.filter((test) => {
       return test.id === id;
     })[0];
 
