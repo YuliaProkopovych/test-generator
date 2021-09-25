@@ -1,16 +1,23 @@
 {
-  "name": "Test_Generator",
+  "name": "Test Generator",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js"
+    "start": "node index.js",
+    "server": "nodemon index.js"
   },
   "keywords": [],
   "author": "Yulia Prokopovych",
   "license": "ISC",
   "dependencies": {
-    "fastify": "^3.21.3"
+    "fastify": "^3.21.3",
+    "fastify-auth": "^1.1.0",
+    "fastify-swagger": "^4.8.3",
+    "jsonwebtoken": "^8.5.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.12"
   }
 }
