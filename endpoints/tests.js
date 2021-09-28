@@ -1,5 +1,7 @@
 const tests = require('../data/tests.js');
 
+const jwt = require('jsonwebtoken');
+
 const getTestsOpts = {
   schema: {
     response: {
@@ -24,12 +26,55 @@ const getTestsOpts = {
 const testsRoute = (fastify, options, done) => {
   fastify.get('/tests', getTestsOpts);
   fastify.get('/tests/:id', getTestOpts); // the :id route is a placeholder for an id (indicates a parameter)
-  fastify.post('/tests/new', newTestOpts);
-  fastify.put('/tests/edit/:id', updateTestOpts);
-  fastify.delete('/tests/:id', deleteTestOpts);
 
+  fastify
+  .register(require('fastify-auth'))
+  .after(() => privateTestRoutes(fastify));
+  done();
+};
+
+const privateTestRoutes = (fastify) => {
+  // create a new post
+  fastify.post('/tests/new', {
+    preHandler: fastify.auth([verifyToken]),
+    ...newTestOpts,
+  });
+
+  // update a post
+  fastify.put('/tests/edit/:id', {
+    preHandler: fastify.auth([verifyToken]),
+    ...updateTestOpts,
+  });
+
+  // delete a post
+  fastify.delete('/tests/:id', {
+    preHandler: fastify.auth([verifyToken]),
+    ...deleteTestOpts,
+  });
+};
+
+const verifyToken = (req, reply, done) => {
+  const { token } = req.headers;
+
+  jwt.verify(token, 'my_jwt_secret', (err, decoded) => {
+    if (err) {
+      done(new Error('Unauthorized'));
+    }
+
+    req.user = {
+      id: decoded.id, // pass in the user's info
+    };
+  });
 
   done();
+};
+
+const headerSchema = {
+  type: 'object',
+  required: ['token'],
+  properties: {
+    token: { type: 'string' },
+  },
 };
 
 const getTestOpts = {
@@ -67,6 +112,7 @@ const getTestOpts = {
 };
 
 const newTestOpts = {
+  headers: headerSchema,
   schema: {
     body: {
       type: 'object',
@@ -91,6 +137,7 @@ const newTestOpts = {
 };
 
 const updateTestOpts = {
+  headers: headerSchema,
   schema: {
     body: {
       type: 'object',
@@ -127,6 +174,7 @@ const updateTestOpts = {
 };
 
 const deleteTestOpts = {
+  headers: headerSchema,
   schema: {
     params: {
       id: { type: 'number' }, // converts the id param to number

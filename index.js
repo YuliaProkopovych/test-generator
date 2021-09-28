@@ -11,7 +11,9 @@ fastify.get('/', (req, reply) => {
 });
 
 //fastify.route(loginRoute);
-fastify.register(require('./endpoints/tests')); // we will be working with posts.js only for now
+fastify.register(require('./endpoints/tests'));
+fastify.register(require('./endpoints/admin'));
+
 
 const start = async () => {
   //const server = fastify({ logger: true });
