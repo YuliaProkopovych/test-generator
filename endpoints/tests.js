@@ -2,6 +2,23 @@ const tests = require('../data/tests.js');
 
 const jwt = require('jsonwebtoken');
 
+const questionSchema = {
+  type: 'object',
+  properties: {
+    questionText: {type: 'string'},
+    answers: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          answerText: { type: 'string' },
+          correct: { type: 'boolean' },
+        },
+      }
+    }
+  }
+};
+
 const getTestsOpts = {
   schema: {
     response: {
@@ -11,8 +28,10 @@ const getTestsOpts = {
           type: 'object',
           properties: {
             id: { type: 'number' },
-            title: { type: 'string' },
-            body: { type: 'string' },
+            questions: {
+              type: 'array',
+              items: questionSchema,
+            },
           },
         },
       },
@@ -87,8 +106,10 @@ const getTestOpts = {
         type: 'object',
         properties: {
           id: { type: 'number' },
-          title: { type: 'string' },
-          body: { type: 'string' },
+          questions: {
+            type: 'array',
+            items: questionSchema,
+          },
         },
       },
     },
@@ -116,11 +137,8 @@ const newTestOpts = {
   schema: {
     body: {
       type: 'object',
-      required: ['title', 'body'],
-      properties: {
-        title: { type: 'string'},
-        body: { type: 'string'},
-      },
+      required: ['questions'],
+      items: questionSchema,
     },
     response: {
       200: { type: 'string'}, // sending a simple message as string
@@ -141,11 +159,8 @@ const updateTestOpts = {
   schema: {
     body: {
       type: 'object',
-      required: ['title', 'body'],
-      properties: {
-        title: { type: 'string'},
-        body: { type: 'string'},
-      },
+      required: ['questions'],
+      items: questionSchema
     },
     params: {
       id: { type: 'number' }, // converts the id param to number

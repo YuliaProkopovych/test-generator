@@ -1,7 +1,34 @@
 const tests = [
-  { id: 1, title: 'Post One', body: 'This is post one' },
-  { id: 2, title: 'Post Two', body: 'This is post two' },
-  { id: 3, title: 'Post Three', body: 'This is post three' }, // you can add as many as you want
+  { id: 1, questions: [
+    { questionText:'Post One',
+      answers: [
+        { answerText: 'This is post one',
+          correct: true },
+        { answerText: 'second',
+          correct: false },
+      ]
+     }
+  ]},
+  { id: 2, questions: [
+    { questionText:'Post One',
+      answers: [
+        { answerText: 'This is post one',
+          correct: true },
+        { answerText: 'second',
+          correct: false },
+      ]
+     }
+  ]},
+  { id: 3, questions: [
+    { questionText:'Post One',
+      answers: [
+        { answerText: 'This is post one',
+          correct: true },
+        { answerText: 'second',
+          correct: false },
+      ]
+     }
+  ]},
 ];
 
 module.exports = tests;
