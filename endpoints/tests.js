@@ -1,4 +1,7 @@
-const tests = require('../data/tests.js');
+//const tests = require('../data/tests.js');
+
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
 
 const jwt = require('jsonwebtoken');
 
@@ -6,16 +9,7 @@ const questionSchema = {
   type: 'object',
   properties: {
     questionText: {type: 'string'},
-    answers: {
-      type: 'array',
-      items: {
-        type: 'object',
-        properties: {
-          answerText: { type: 'string' },
-          correct: { type: 'boolean' },
-        },
-      }
-    }
+    answers: {type: 'string'}
   }
 };
 
@@ -37,7 +31,8 @@ const getTestsOpts = {
       },
     },
   },
-  handler: (req, reply) => {
+  handler: async (req, reply) => {
+    const tests = await prisma.test.findMany();
     reply.send(tests);
   },
 };
@@ -114,12 +109,14 @@ const getTestOpts = {
       },
     },
   },
-  handler: (req, reply) => {
+  handler: async (req, reply) => {
     const { id } = req.params;
 
-    const test = tests.filter((test) => {
-      return test.id === id;
-    })[0];
+    const test = await prisma.test.findUnique({
+      where: {
+        id: id,
+      },
+    });
 
     if (!test) {
       return reply.status(404).send({
@@ -138,17 +135,27 @@ const newTestOpts = {
     body: {
       type: 'object',
       required: ['questions'],
-      items: questionSchema,
+      properties: {
+        questions: {
+          type: 'array',
+          items: questionSchema,
+        }
+      }
     },
     response: {
       200: { type: 'string'}, // sending a simple message as string
     },
   },
-  handler: (req, reply) => {
-    const { title, body } = req.body; // no body parser required for this to work
-
-    const id = tests.length + 1; // posts is imported from cloud/posts.js
-    tests.push({ id, title, body });
+  handler: async (req, reply) => {
+    const newTest = {
+      author :  {
+        connect: {id: req.user.id }
+      },
+      questions : {
+        create: req.body.questions,
+      },
+    };
+    const createTest = await prisma.test.create({ data: newTest})
 
     reply.send('Test added');
   }
@@ -169,20 +176,15 @@ const updateTestOpts = {
       200: { type: 'string'}, // a simple message will be sent
     },
   },
-  handler: (req, reply) => {
-    const { title, body } = req.body;
+  handler: async (req, reply) => {
     const { id } = req.params;
 
-    const test = tests.filter((test) => {
-      return test.id === id;
-    })[0];
-
-    if (!test) {
-      return reply.status(404).send(new Error("Test doesn't exist"));
-    }
-
-    test.title = title;
-    test.body = body;
+    const updateUser = await prisma.test.update({
+      where: {
+        id: id,
+      },
+      data: req.body
+    });
 
     return reply.send('Test updated');
   }
@@ -198,18 +200,29 @@ const deleteTestOpts = {
       200: { type: 'string' },
     },
   },
-  handler: (req, reply) => {
+  handler: async (req, reply) => {
     const { id } = req.params;
 
-    const testIndex = tests.findIndex((test) => {
-      return test.id === id;
+
+    const deleteQuestions = prisma.question.deleteMany({
+      where: {
+        testId: id,
+      },
     });
 
-    if (testIndex === -1) {
-      return reply.status(404).send(new Error("Test doesn't exist"));
-    }
+    const deleteTest = prisma.test.delete({
+      where: {
+        id: id,
+      },
+    });
 
-    tests.splice(testIndex, 1);
+
+
+    try {
+      const transaction = await prisma.$transaction([deleteQuestions, deleteTest]);
+    } catch (e) {
+          console.log( e.message);
+    }
 
     return reply.send('Test deleted');
   }
