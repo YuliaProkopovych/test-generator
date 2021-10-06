@@ -1,4 +1,5 @@
-const admins = require('../data/admins');
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
 
 const jwt = require('jsonwebtoken');
 
@@ -26,7 +27,8 @@ const getAdminsOpts = {
       },
     },
   },
-  handler: (req, reply) => {
+  handler: async (req, reply) => {
+    const admins = await prisma.user.findMany();
     reply.send(admins);
   },
 };
@@ -35,7 +37,7 @@ const newAdminOpts = {
   schema: {
     body: {
       type: 'object',
-      required: ['username', 'email', 'password'],
+      required: ['name', 'email', 'password'],
       properties: {
         username: { type: 'string' },
         email: { type: 'string' },
@@ -46,16 +48,8 @@ const newAdminOpts = {
       200: { type: 'string' },
     },
   },
-  handler: (req, reply) => {
-    const { username, email, password } = req.body;
-    const id = admins.length + 1;
-
-    admins.push({
-      id,
-      username,
-      email,
-      password, // you can hash the password if you want
-    });
+  handler: async (req, reply) => {
+    const newUser = await prisma.user.create({data: req.body});
 
     reply.send('Account created successfully');
   }
@@ -65,7 +59,7 @@ const loginAdminOpts = {
   schems : {
     body: {
       type: 'object',
-      required: ['username', 'password'],
+      required: ['name', 'password'],
       properties: {
         username: { type: 'string' },
         password: { type: 'string' },
@@ -80,13 +74,14 @@ const loginAdminOpts = {
       },
     },
   },
-  handler: (req, reply) => {
-    const { username, password } = req.body;
+  handler: async (req, reply) => {
+    const { email, password } = req.body;
 
-    const admin = admins.filter((admin) => {
-      return admin.username === username;
-    })[0];
-
+    const admin = await prisma.user.findUnique(
+      { where:
+        { email: email }
+      }
+    );
     if (!admin) {
       return reply.send("This admin doesn't exist");
     }
