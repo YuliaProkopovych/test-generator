@@ -11,7 +11,7 @@
   "author": "Yulia Prokopovych",
   "license": "ISC",
   "dependencies": {
-    "@prisma/client": "^3.1.1",
+    "@prisma/client": "^3.2.1",
     "fastify": "^3.22.0",
     "fastify-auth": "^1.1.0",
     "fastify-cors": "^6.0.2",
@@ -20,6 +20,6 @@
   },
   "devDependencies": {
     "nodemon": "^2.0.13",
-    "prisma": "^3.1.1"
+    "prisma": "^3.2.1"
   }
 }
