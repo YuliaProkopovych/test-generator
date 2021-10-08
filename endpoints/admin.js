@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken');
 
 const adminRoutes = (fastify, options, done) => {
   fastify.get('/admins', getAdminsOpts);
+  fastify.get('/admins/:id', getSingleAdminOpts);
   fastify.post('/admins/register', newAdminOpts);
   fastify.post('/admins/login', loginAdminOpts);
 
@@ -30,6 +31,34 @@ const getAdminsOpts = {
   handler: async (req, reply) => {
     const admins = await prisma.user.findMany();
     reply.send(admins);
+  },
+};
+
+const getSingleAdminOpts = {
+  schema: {
+    params: {
+      id: { type: 'number' },
+    },
+    response: {
+      200: {
+        type: 'object',
+        properties: {
+          username: { type: 'string' },
+          email: { type: 'string' },
+        },
+      },
+    },
+  },
+  handler: async (req, reply) => {
+    const { id } = req.params;
+
+    const admin = await prisma.user.findUnique({
+      where: {
+        id: id,
+      },
+    });
+
+    reply.send(admin);
   },
 };
 
