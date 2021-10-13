@@ -3,16 +3,16 @@ const prisma = new PrismaClient();
 
 const jwt = require('jsonwebtoken');
 
-const adminRoutes = (fastify, options, done) => {
-  fastify.get('/admins', getAdminsOpts);
-  fastify.get('/admins/:id', getSingleAdminOpts);
-  fastify.post('/admins/register', newAdminOpts);
-  fastify.post('/admins/login', loginAdminOpts);
+const userRoutes = (fastify, options, done) => {
+  fastify.get('/users', getUsersOpts);
+  fastify.get('/users/:id', getSingleUserOpts);
+  fastify.post('/users/register', newUserOpts);
+  fastify.post('/users/login', loginUserOpts);
 
   done();
 };
 
-const getAdminsOpts = {
+const getUsersOpts = {
   schema: {
     response: {
       200: {
@@ -29,12 +29,12 @@ const getAdminsOpts = {
     },
   },
   handler: async (req, reply) => {
-    const admins = await prisma.user.findMany();
-    reply.send(admins);
+    const Users = await prisma.user.findMany();
+    reply.send(Users);
   },
 };
 
-const getSingleAdminOpts = {
+const getSingleUserOpts = {
   schema: {
     params: {
       id: { type: 'number' },
@@ -52,17 +52,17 @@ const getSingleAdminOpts = {
   handler: async (req, reply) => {
     const { id } = req.params;
 
-    const admin = await prisma.user.findUnique({
+    const User = await prisma.user.findUnique({
       where: {
         id: id,
       },
     });
 
-    reply.send(admin);
+    reply.send(User);
   },
 };
 
-const newAdminOpts = {
+const newUserOpts = {
   schema: {
     body: {
       type: 'object',
@@ -84,7 +84,7 @@ const newAdminOpts = {
   }
 }
 
-const loginAdminOpts = {
+const loginUserOpts = {
   schems : {
     body: {
       type: 'object',
@@ -106,23 +106,23 @@ const loginAdminOpts = {
   handler: async (req, reply) => {
     const { email, password } = req.body;
 
-    const admin = await prisma.user.findUnique(
+    const User = await prisma.user.findUnique(
       { where:
         { email: email }
       }
     );
-    if (!admin) {
-      return reply.send("This admin doesn't exist");
+    if (!User) {
+      return reply.send("This User doesn't exist");
     }
 
     // check if password is correct
-    if (password !== admin.password) {
+    if (password !== User.password) {
       return reply.send('Invalid credentials');
     }
 
     // sign a token
     jwt.sign(
-      { id: admin.id },
+      { id: User.id },
       'my_jwt_secret',
       { expiresIn: 3 * 86400 },
       (err, token) => {
@@ -135,4 +135,4 @@ const loginAdminOpts = {
 }
 
 
-module.exports = adminRoutes;
+module.exports = userRoutes;

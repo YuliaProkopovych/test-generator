@@ -10,7 +10,7 @@ fastify.get('/', (req, reply) => {
 });
 
 fastify.register(require('./endpoints/tests'));
-fastify.register(require('./endpoints/admin'));
+fastify.register(require('./endpoints/user'));
 
 
 const start = async () => {
